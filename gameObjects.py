@@ -31,14 +31,14 @@ class Simple_Block(Block):
 class Moving_Block(Block):
     COLOR = "red"
 
-    def __init__(self, x, y, width, height, direction, distance, speed=10):
+    def __init__(self, x, y, width, height, direction, distance, speed=1):
         super().__init__(x, y, width, height)
         self.dest_x, self.dest_y = self.x, self.y
         self.start_x, self.start_y = self.x, self.y
         
         self.direction = direction
         self.distance = distance
-        self.speed = speed
+        self.speed = speed/100
 
         if self.direction == 'n':
             self.dest_y -= self.distance
@@ -51,12 +51,12 @@ class Moving_Block(Block):
 
     def move(self):
         dx, dy = (self.dest_x - self.start_x, self.dest_y - self.start_y)
-        step_x, step_y = (dx / self.speed, dy / self.speed)
+        step_x, step_y = (dx * self.speed, dy * self.speed)
 
         self.x += step_x
         self.y += step_y
 
-        if abs(self.dest_x - self.x) <= 0 and abs(self.dest_y - self.y) <= 0:
+        if abs(self.dest_x - self.x) <= abs(step_x) and abs(self.dest_y - self.y) <= abs(step_y):
             temp = (self.dest_x, self.dest_y)
             self.dest_x, self.dest_y = self.start_x, self.start_y
             self.start_x, self.start_y = temp

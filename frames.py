@@ -1,56 +1,62 @@
 import pygame
+from sympy import frac
 import gameObjects
 import pickle
 
-WIN_SIZE = (1000, 800)
-WIN = pygame.display.set_mode(WIN_SIZE)
-pygame.display.set_caption("World Hardest Game")
-FPS = 60
+class Frame:
+    def __init__(self, win_size, grid_size, grid_spacing):
+        self.grid = None
+        self.win_size, self.grid_size, self.grid_spacing = win_size, grid_size, grid_spacing
 
-GRID_SIZE = (25, 20)
-GRID_SPACING = (WIN_SIZE[0]/GRID_SIZE[0], WIN_SIZE[1]/GRID_SIZE[1])
-GRID_COLOR = "black"
+    def draw_grid(self, win, grid_color):
+        for x in range(self.grid_size[0]):
+            pygame.draw.rect(win, grid_color, pygame.Rect(x*self.grid_spacing[0], 0, 1, self.win_size[1]))
+        for y in range(self.grid_size[1]):
+            pygame.draw.rect(win, grid_color, pygame.Rect(0, y*self.grid_spacing[1], self.win_size[0], 1))
+
+    def draw_objects(self, win):
+        for y in range(len(self.grid)):
+            for x, obj in enumerate(self.grid[y]):
+                if obj: 
+                    obj.draw(win)
+
+    def draw(self, win):
+        pass
+
+    def main(self, win):
+        pass
 
 
-class Game:
+class Game(Frame):
 
-    def __init__(self, win):
+    def __init__(self, win_size, grid_size, grid_spacing):
+        super().__init__(win_size, grid_size, grid_spacing)
         self.grid = pickle.load(open('save_level.pickle', 'rb'))
-        self.win = win
-
-
+        
     def draw(self, win):
         win.fill("white")
 
-        # self.draw_grid(win)
-        # self.draw_objects(win)
+        self.draw_grid(win, 'black')
+        self.draw_objects(win)
 
         pygame.display.update()
 
 
-    def main(self):        
+    def main(self, win):        
         for y in range(len(self.grid)):
             for x, obj in enumerate(self.grid[y]):
                 if obj: obj.move()
 
-        self.draw(self.win)
+        self.draw(win)
 
 
+class Level_Creator(Frame):
+    
+    def __init__(self, win_size, grid_size, grid_spacing):
+        super().__init__(win_size, grid_size, grid_spacing)
 
-def main():
-    is_running = True
-    test = Game()
+    def draw(self, win):
+        pass
 
-    clock = pygame.time.Clock()
-    while is_running:
-        clock.tick(FPS)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                is_running = False
-                break
-        
-        test.main()
-
-    pygame.quit()
-
-main()
+    def main(self, win):
+        pass
