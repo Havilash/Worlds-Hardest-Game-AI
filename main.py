@@ -1,22 +1,20 @@
 import pygame
-from sympy import principal_branch
 import gameObjects
+import pickle
 
 pygame.init()
 
 WIN_SIZE = (1000, 800)
 WIN = pygame.display.set_mode(WIN_SIZE)
 pygame.display.set_caption("World Hardest Game")
-FPS = 30
+FPS = 60
 
 GRID_SIZE = (25, 20)
 GRID_SPACING = (WIN_SIZE[0]/GRID_SIZE[0], WIN_SIZE[1]/GRID_SIZE[1])
 GRID_COLOR = "black"
 
 grid = [[None for x in range(GRID_SIZE[0])] for y in range(GRID_SIZE[1])]
-grid[5][5] = gameObjects.Moving_Block(5*GRID_SPACING[0], 5*GRID_SPACING[1], *GRID_SPACING, "e")
-
-
+grid = pickle.load(open('save_level.pickle', 'rb'))
 
 def draw_grid(win):
     for x in range(GRID_SIZE[0]):
@@ -27,7 +25,7 @@ def draw_grid(win):
 
 def set_object(x, y, obj):
     print(x, y)
-    grid[x][y] = obj
+    grid[y][x] = obj
 
 
 def draw_objects(win):
@@ -56,13 +54,6 @@ def main():
             if event.type == pygame.QUIT:
                 is_running = False
                 break
-
-            if pygame.mouse.get_pressed()[0]:
-                mouse_pos = pygame.mouse.get_pos()
-                mouse_pos = (int(mouse_pos[0]/GRID_SPACING[0]), int(mouse_pos[1]/GRID_SPACING[1]))
-                set_object(*mouse_pos, gameObjects.Simple_Block(mouse_pos[0]*GRID_SPACING[0], mouse_pos[1]*GRID_SPACING[1], *GRID_SPACING))
-                set_object(*mouse_pos, gameObjects.Moving_Block(mouse_pos[0]*GRID_SPACING[0], mouse_pos[1]*GRID_SPACING[1], *GRID_SPACING, "e"))
-
         
         for y in range(len(grid)):
             for x, obj in enumerate(grid[y]):

@@ -1,0 +1,116 @@
+from argon2 import PasswordHasher
+import pygame
+import gameObjects
+import pickle
+
+pygame.init()
+
+WIN_SIZE = (1000, 800)
+WIN = pygame.display.set_mode(WIN_SIZE)
+pygame.display.set_caption("World Hardest Game")
+FPS = 60
+
+GRID_SIZE = (25, 20)
+GRID_SPACING = (WIN_SIZE[0]/GRID_SIZE[0], WIN_SIZE[1]/GRID_SIZE[1])
+GRID_COLOR = "black"
+
+STAT_FONT = pygame.font.SysFont("comicsans", 20)
+
+grid = [[None for x in range(GRID_SIZE[0])] for y in range(GRID_SIZE[1])]
+grid = [[gameObjects.Simple_Block(x*GRID_SPACING[0], y*GRID_SPACING[1], *GRID_SPACING) for x in range(GRID_SIZE[0])] for y in range(GRID_SIZE[1])]
+
+choose_objs = ['Nothing', 'Simple Block', 'Moving Block']
+crnt_obj = 0
+choose_direction = ['n', 'e', 's', 'w']
+crnt_direction = 0
+
+def draw_grid(win):
+    for x in range(GRID_SIZE[0]):
+        pygame.draw.rect(win, GRID_COLOR, pygame.Rect(x*GRID_SPACING[0], 0, 1, WIN_SIZE[1]))
+    for y in range(GRID_SIZE[1]):
+        pygame.draw.rect(win, GRID_COLOR, pygame.Rect(0, y*GRID_SPACING[1], WIN_SIZE[0], 1))
+
+
+def set_object(x, y, obj):
+    print(x, y)
+    grid[y][x] = obj
+
+
+def draw_objects(win):
+    for y in range(len(grid)):
+        for x, obj in enumerate(grid[y]):
+            if obj: 
+                obj.draw(win)
+
+
+def draw(win):
+    win.fill("white")
+
+    draw_grid(win)
+    draw_objects(win)
+
+    # Choose Object
+    choosed_obj = STAT_FONT.render(choose_objs[crnt_obj], 1, (0,0,0))
+    win.blit(choosed_obj, (WIN_SIZE[0] - choosed_obj.get_width() - 50, 10))
+
+    if choose_objs[crnt_obj] == 'Moving Block':
+        choosed_direction = STAT_FONT.render(choose_direction[crnt_direction], 1, (0,0,0))
+        win.blit(choosed_direction, (WIN_SIZE[0] - choosed_direction.get_width() - 20, 10))
+
+    pygame.display.update()
+
+
+def main():
+    global crnt_obj, crnt_direction
+    is_running = True
+
+    clock = pygame.time.Clock()
+    while is_running:
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                is_running = False
+                break
+            
+            if event.type == pygame.KEYDOWN:
+                if choose_objs[crnt_obj] == 'Moving Block':
+                    if event.key == pygame.K_UP: crnt_direction += 1
+                    if event.key == pygame.K_DOWN: crnt_direction -= 1
+
+                if event.key == pygame.K_RIGHT:
+                    crnt_obj += 1
+
+                if event.key == pygame.K_LEFT:
+                    crnt_obj -= 1
+
+
+        if crnt_obj >= len(choose_objs): crnt_obj = 0
+        if crnt_obj < 0: crnt_obj = len(choose_objs)-1
+        if crnt_direction >= len(choose_direction): crnt_direction = 0
+        if crnt_direction < 0: crnt_direction = len(choose_direction)-1
+
+        # Place Objects
+        if pygame.mouse.get_pressed()[0]:
+            mouse_pos = pygame.mouse.get_pos()
+            mouse_pos = (int(mouse_pos[0]/GRID_SPACING[0]), int(mouse_pos[1]/GRID_SPACING[1]))
+            surface = None
+            if choose_objs[crnt_obj] == 'Nothing': surface = None
+            elif choose_objs[crnt_obj] == 'Simple Block': surface = gameObjects.Simple_Block(mouse_pos[0]*GRID_SPACING[0], mouse_pos[1]*GRID_SPACING[1], *GRID_SPACING)
+            elif choose_objs[crnt_obj] == 'Moving Block': surface = gameObjects.Moving_Block(mouse_pos[0]*GRID_SPACING[0], mouse_pos[1]*GRID_SPACING[1], *GRID_SPACING, choose_direction[crnt_direction], 5*GRID_SPACING[0], 100)
+            set_object(*mouse_pos, surface)
+
+        # Save Level
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LCTRL] and keys[pygame.K_s]:
+            pickle.dump(grid, open('save_level.pickle', 'wb'))
+        
+        for y in range(len(grid)):
+            for x, obj in enumerate(grid[y]):
+                if obj: obj.move()
+
+        draw(WIN)
+
+    pygame.quit()
+
+
+main()
