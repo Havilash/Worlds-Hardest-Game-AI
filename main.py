@@ -13,7 +13,7 @@ GRID_SIZE = (25, 20)
 GRID_SPACING = (WIN_SIZE[0]/GRID_SIZE[0], WIN_SIZE[1]/GRID_SIZE[1])
 GRID_COLOR = "black"
 
-grid = [[None for x in range(GRID_SIZE[0])] for y in range(GRID_SIZE[1])]
+# grid = [[None for x in range(GRID_SIZE[0])] for y in range(GRID_SIZE[1])]
 grid = pickle.load(open('save_level.pickle', 'rb'))
 
 def draw_grid(win):
@@ -21,11 +21,6 @@ def draw_grid(win):
         pygame.draw.rect(win, GRID_COLOR, pygame.Rect(x*GRID_SPACING[0], 0, 1, WIN_SIZE[1]))
     for y in range(GRID_SIZE[1]):
         pygame.draw.rect(win, GRID_COLOR, pygame.Rect(0, y*GRID_SPACING[1], WIN_SIZE[0], 1))
-
-
-def set_object(x, y, obj):
-    print(x, y)
-    grid[y][x] = obj
 
 
 def draw_objects(win):

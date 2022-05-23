@@ -1,4 +1,3 @@
-from argon2 import PasswordHasher
 import pygame
 import gameObjects
 import pickle
@@ -15,14 +14,18 @@ GRID_SPACING = (WIN_SIZE[0]/GRID_SIZE[0], WIN_SIZE[1]/GRID_SIZE[1])
 GRID_COLOR = "black"
 
 STAT_FONT = pygame.font.SysFont("comicsans", 20)
+STAT_FONT_SMALL = pygame.font.SysFont("comicsans", 15)
 
-grid = [[None for x in range(GRID_SIZE[0])] for y in range(GRID_SIZE[1])]
+# grid = [[None for x in range(GRID_SIZE[0])] for y in range(GRID_SIZE[1])]
 grid = [[gameObjects.Simple_Block(x*GRID_SPACING[0], y*GRID_SPACING[1], *GRID_SPACING) for x in range(GRID_SIZE[0])] for y in range(GRID_SIZE[1])]
 
-choose_objs = ['Nothing', 'Simple Block', 'Moving Block']
+
+obj_names = ['Nothing', 'Simple Block', 'Moving Block']
 crnt_obj = 0
-choose_direction = ['n', 'e', 's', 'w']
+direction_names = ['n', 'e', 's', 'w']
 crnt_direction = 0
+distance = 1
+block_speed = 1
 
 def draw_grid(win):
     for x in range(GRID_SIZE[0]):
@@ -49,20 +52,29 @@ def draw(win):
     draw_grid(win)
     draw_objects(win)
 
-    # Choose Object
-    choosed_obj = STAT_FONT.render(choose_objs[crnt_obj], 1, (0,0,0))
-    win.blit(choosed_obj, (WIN_SIZE[0] - choosed_obj.get_width() - 50, 10))
+    # Objects
+    obj_names_label = STAT_FONT.render(obj_names[crnt_obj], 1, (0,0,0))
+    win.blit(obj_names_label, (WIN_SIZE[0] - obj_names_label.get_width() - 20, 10))
 
-    if choose_objs[crnt_obj] == 'Moving Block':
-        choosed_direction = STAT_FONT.render(choose_direction[crnt_direction], 1, (0,0,0))
-        win.blit(choosed_direction, (WIN_SIZE[0] - choosed_direction.get_width() - 20, 10))
+    # Object --> Moving Block
+    if obj_names[crnt_obj] == 'Moving Block':
+        # Direction
+        direction_names_label = STAT_FONT_SMALL.render("Direction: " + direction_names[crnt_direction].upper(), 1, (0,0,0))
+        win.blit(direction_names_label, (WIN_SIZE[0] - obj_names_label.get_width() - 20, 10+obj_names_label.get_height()))
+        # Distance
+        distance_label = STAT_FONT_SMALL.render("Distance: " + str(distance), 1, (0,0,0))
+        win.blit(distance_label, (WIN_SIZE[0] - obj_names_label.get_width() - 20, 10+obj_names_label.get_height()+direction_names_label.get_height()))
+        # Speed
+        speed_label = STAT_FONT_SMALL.render("Speed: " + str(block_speed), 1, (0,0,0))
+        win.blit(speed_label, (WIN_SIZE[0] - obj_names_label.get_width() - 20, 10+obj_names_label.get_height()+direction_names_label.get_height()+distance_label.get_height()))
 
     pygame.display.update()
 
 
 def main():
-    global crnt_obj, crnt_direction
+    global crnt_obj, crnt_direction, distance, block_speed
     is_running = True
+    changing_status = 0
 
     clock = pygame.time.Clock()
     while is_running:
@@ -73,9 +85,21 @@ def main():
                 break
             
             if event.type == pygame.KEYDOWN:
-                if choose_objs[crnt_obj] == 'Moving Block':
-                    if event.key == pygame.K_UP: crnt_direction += 1
-                    if event.key == pygame.K_DOWN: crnt_direction -= 1
+                if obj_names[crnt_obj] == 'Moving Block':
+                    if changing_status == 0:
+                        if event.key == pygame.K_UP: crnt_direction += 1
+                        if event.key == pygame.K_DOWN: crnt_direction -= 1
+                    elif changing_status == 1:
+                        if event.key == pygame.K_UP: distance += 1
+                        if event.key == pygame.K_DOWN: distance -= 1
+                    elif changing_status == 2:
+                        if event.key == pygame.K_UP: block_speed += 1
+                        if event.key == pygame.K_DOWN: block_speed -= 1
+
+                if event.key == pygame.K_TAB:
+                    changing_status += 1
+                    if changing_status > 2: changing_status = 0
+                    if changing_status < 0: changing_status = 2
 
                 if event.key == pygame.K_RIGHT:
                     crnt_obj += 1
@@ -84,19 +108,19 @@ def main():
                     crnt_obj -= 1
 
 
-        if crnt_obj >= len(choose_objs): crnt_obj = 0
-        if crnt_obj < 0: crnt_obj = len(choose_objs)-1
-        if crnt_direction >= len(choose_direction): crnt_direction = 0
-        if crnt_direction < 0: crnt_direction = len(choose_direction)-1
+        if crnt_obj >= len(obj_names): crnt_obj = 0
+        if crnt_obj < 0: crnt_obj = len(obj_names)-1
+        if crnt_direction >= len(direction_names): crnt_direction = 0
+        if crnt_direction < 0: crnt_direction = len(direction_names)-1
 
         # Place Objects
         if pygame.mouse.get_pressed()[0]:
             mouse_pos = pygame.mouse.get_pos()
             mouse_pos = (int(mouse_pos[0]/GRID_SPACING[0]), int(mouse_pos[1]/GRID_SPACING[1]))
             surface = None
-            if choose_objs[crnt_obj] == 'Nothing': surface = None
-            elif choose_objs[crnt_obj] == 'Simple Block': surface = gameObjects.Simple_Block(mouse_pos[0]*GRID_SPACING[0], mouse_pos[1]*GRID_SPACING[1], *GRID_SPACING)
-            elif choose_objs[crnt_obj] == 'Moving Block': surface = gameObjects.Moving_Block(mouse_pos[0]*GRID_SPACING[0], mouse_pos[1]*GRID_SPACING[1], *GRID_SPACING, choose_direction[crnt_direction], 5*GRID_SPACING[0], 100)
+            if obj_names[crnt_obj] == 'Nothing': surface = None
+            elif obj_names[crnt_obj] == 'Simple Block': surface = gameObjects.Simple_Block(mouse_pos[0]*GRID_SPACING[0], mouse_pos[1]*GRID_SPACING[1], *GRID_SPACING)
+            elif obj_names[crnt_obj] == 'Moving Block': surface = gameObjects.Moving_Block(mouse_pos[0]*GRID_SPACING[0], mouse_pos[1]*GRID_SPACING[1], *GRID_SPACING, direction_names[crnt_direction], distance*GRID_SPACING[0], block_speed)
             set_object(*mouse_pos, surface)
 
         # Save Level

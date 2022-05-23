@@ -55,7 +55,6 @@ class Moving_Block(Block):
 
         self.x += step_x
         self.y += step_y
-        print(self.dest_x - self.x)
 
         if abs(self.dest_x - self.x) <= 0 and abs(self.dest_y - self.y) <= 0:
             temp = (self.dest_x, self.dest_y)
