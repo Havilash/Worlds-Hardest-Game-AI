@@ -40,7 +40,7 @@ class Player:
         if point: return True
         return False
 
-    def check_radar(self, win, degree):
+    def check_radar(self, win, degree, coins_state):
         len = 0
         self.center = (self.x + (self.width/2), self.y + (self.height/2))
         x = int(self.center[0] + math.cos(math.radians(degree))*len)

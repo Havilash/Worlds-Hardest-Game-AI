@@ -1,3 +1,4 @@
+from ast import Num
 import gameObjects
 import frames
 import pygame
@@ -39,8 +40,6 @@ def eval_genomes(genomes, config):
         
         game_frame.main(WIN, OBSTACLE_WIN)
         # level_creator_frame.main(WIN)
-
-
 
 def level_creator():
     is_running = True

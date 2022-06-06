@@ -8,6 +8,8 @@ import neat
 
 
 pygame.init()
+gen = 0
+num = 1
 
 class Frame:
     def __init__(self, win_size, grid_size, grid_spacing):
@@ -44,6 +46,10 @@ class Game(Frame):
         self.winner = None
         try: self.winner = pickle.load(open('winner.pickle', 'rb'))
         except: print("No Winner")
+
+        global gen
+        gen += 1
+
 
         self.kill_btn = gameObjects.Button(40, 20, 60, 30, 'red', "Kill", self.kill_btn_func)
 
@@ -132,7 +138,7 @@ class Game(Frame):
         self.radars = [[] for i in range(len(self.players))]
         for i, player in enumerate(self.players):
             for degree in range(0, 360, 5):
-                self.radars[i].append(player.check_radar(obstacle_win, degree))
+                self.radars[i].append(player.check_radar(obstacle_win, degree, self.players_coins_state))
         
 
         self.is_coin = [[] for i in range(len(self.players))]
@@ -211,6 +217,14 @@ class Game(Frame):
         if len(self.players)>0:
             if self.ge[0].fitness > 100:
                 pickle.dump(self.nets[0], open("winner.pickle", 'wb'))
+
+        global num, gen
+        if gen >= 15 * num:
+            if len(self.players) > 0:
+                num += 1
+                pickle.dump(self.nets[0], open("crnt_winner.pickle", 'wb'))
+                print("[SAVING] ...")
+
 
 
 class Level_Creator(Frame):
